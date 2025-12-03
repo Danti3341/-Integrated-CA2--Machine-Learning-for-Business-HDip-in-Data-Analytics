@@ -94,6 +94,272 @@ def plot_average_rating_trend(df):
     )
     return fig3
 
+# Visualization 4: Top 5 Most Popular Categories (Horizontal Bar Chart)
+def plot_top_categories_bar(df): 
+    top_categories = (
+        df['category']
+        .value_counts()
+        .head(5)
+        .reset_index()
+    )
+    top_categories.columns = ['category', 'count'] # Rename columns for cleaner plotting
+    fig4 = px.bar(
+        top_categories,
+        x='count',
+        y='category',
+        orientation='h',
+        title='Top 5 Most Popular Categories',
+        labels={'count': 'Number of Rentals', 'category': 'Category'},
+        color='count',
+        color_continuous_scale=px.colors.sequential.Reds,
+        text='count',
+        template=plotly_template
+    )
+    fig4.update_layout(
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16),
+        yaxis=dict(autorange="reversed", showgrid=True, gridcolor='lightgray'),
+        xaxis=dict(showgrid=True, gridcolor='lightgray')
+    )
+
+    return fig4
+
+# Visualization 5: Inventory Hierarchy: Categories within Occasions (Treemap)
+def plot_category_occasion_treemap(df): 
+    # 1. Prepare the data: Aggregate counts by 'rented_for' and 'category'
+    treemap_data = (
+        df
+        .groupby(['rented_for', 'category'])
+        .size()
+        .reset_index(name='count')
+    )
+
+    # 2. Create the treemap
+    fig5 = px.treemap(
+        treemap_data,
+        path=['rented_for', 'category'],
+        values='count',
+        title='Inventory Hierarchy: Categories within Occasions',
+        color_discrete_sequence=color_sequence,
+        template=plotly_template
+    )
+
+    fig5.update_layout(
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16)
+    )
+
+    return fig5
+
+# Visualization 6: Age Distribution by Body Type (Violin Plot)
+def plot_age_by_body_type_violin(df): 
+    # Drop rows where height or weight couldn't be parsed (for cleaner plots)
+    df_clean_body = df.dropna(subset=['weight_num', 'height_num', 'age'])
+    fig6 = px.violin(
+        df_clean_body,
+        x='body_type',
+        y='age',
+        box=True,
+        title='Age Distribution by Body Type',
+        labels={'body_type': 'Body Type', 'age': 'Age'},
+        color='body_type',
+        color_discrete_sequence=color_sequence,
+        template=plotly_template
+    )
+    fig6.update_layout(
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16),
+        xaxis=dict(showgrid=True, gridcolor='lightgray'),
+        yaxis=dict(showgrid=True, gridcolor='lightgray')
+    )
+
+    return fig6
+
+# Visualization 7: Height vs. Weight Correlation (Scatter Plot)
+def plot_height_weight_scatter(df): 
+    # Drop rows where height or weight couldn't be parsed (for cleaner plots)
+    df_clean_body = df.dropna(subset=['weight_num', 'height_num'])
+
+    fig7 = px.scatter(
+        df_clean_body,
+        x='weight_num',
+        y='height_num',
+        color='body_type',
+        title='Height vs. Weight Correlation',
+        labels={'weight_num': 'Weight (lbs)', 'height_num': 'Height (inches)', 'body_type': 'Body Type'},
+        opacity=0.6,
+        color_discrete_sequence=color_sequence,
+        template=plotly_template
+    )
+    fig7.update_layout(
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16),
+        xaxis=dict(range=[80, 300], showgrid=True, gridcolor='lightgray'),
+        yaxis=dict(range=[50, 80], showgrid=True, gridcolor='lightgray')
+    )
+
+    return fig7
+
+# Visualization 8: Distribution of User Body Types (Treemap)
+def plot_body_type_distribution_treemap(df):
+    # Drop rows where height or weight couldn't be parsed (for cleaner plots)
+    df_clean_body = df.dropna(subset=['weight_num', 'height_num', 'age'])
+    
+    # Count the body types
+    body_type_counts = df_clean_body['body_type'].value_counts().reset_index()
+    body_type_counts.columns = ['body_type', 'count']
+
+    # Create the treemap
+    fig8 = px.treemap(
+        body_type_counts,
+        path=['body_type'],
+        values='count',
+        title='Distribution of User Body Types',
+        color_discrete_sequence=color_sequence,
+        template=plotly_template
+    )
+
+    fig8.update_layout(
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16)
+    )
+
+    return fig8
+
+# Visualization 9: Fit Feedback Breakdown by Body Type (Stacked Bar Chart)
+def plot_fit_feedback_by_body_type(df): 
+    # 1. Prepare the data: Group by 'body_type' and 'fit' to get counts
+    fit_feedback = (
+        df
+        .groupby(['body_type', 'fit'])
+        .size()
+        .reset_index(name='count')
+    )
+
+    # 2. Create the stacked bar chart
+    fig9 = px.bar(
+        fit_feedback,
+        x='body_type',
+        y='count',
+        color='fit',
+        title='Fit Feedback Breakdown by Body Type',
+        labels={'body_type': 'Body Type', 'count': 'Number of Reviews', 'fit': 'Fit Feedback'},
+        color_discrete_sequence=color_sequence,
+        template=plotly_template
+    )
+
+    fig9.update_layout(
+        barmode='stack',
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16),
+        xaxis=dict(showgrid=True, gridcolor='lightgray'),
+        yaxis=dict(showgrid=True, gridcolor='lightgray')
+    )
+
+    return fig9
+
+# Visualization 10: Size Range Distribution by Top 20 Categories (Box Plot)
+def plot_size_range_by_category(df):
+    # Get top 10 categories
+    top_10_categories = df['category'].value_counts().head(10).index
+    df_top_categories = df[df['category'].isin(top_10_categories)]
+    fig10 = px.box(
+        df_top_categories,
+        x='category',
+        y='size',
+        title='Size Range Distribution by Top 10 Categories',
+        labels={'category': 'Category', 'size': 'Size'},
+        color='category',
+        color_discrete_sequence=color_sequence,
+        template=plotly_template
+    )
+    fig10.update_layout(
+        width=fig_width,
+        height=fig_height,
+        font=dict(family=font_family, size=16),
+        showlegend=False,
+        xaxis=dict(showgrid=True, gridcolor='lightgray'),
+        yaxis=dict(showgrid=True, gridcolor='lightgray')
+    )
+
+    return fig10
+
+# Visualization 11: Sentiment Analysis of Review Texts (Histogram)
+def plot_sentiment_analysis_histogram(df):
+    # Take a sample of text reviews
+    sample_reviews = df.sample(n=10000, random_state=42)
+
+    # Compute sentiment polarity for each review in the sample
+    sample_reviews['sentiment'] = sample_reviews['review_text'].apply(lambda x: TextBlob(x).sentiment.polarity)
+
+    # Interactive histogram of sentiment polarity
+    fig_sentiment = px.histogram(
+        sample_reviews,
+        x='sentiment',
+        nbins=50,
+        title='Sentiment Analysis of Review Texts',
+        labels={'sentiment': 'Sentiment Polarity'},
+        template=plotly_template,
+        width=fig_width,
+        height=fig_height,
+        color=sample_reviews['sentiment'].apply(lambda x: 'Positive' if x > 0 else 'Negative'),
+        color_discrete_map={'Positive': 'green', 'Negative': 'red'}
+    )
+    fig_sentiment.update_layout(
+        font=dict(family=font_family, size=16),
+        xaxis=dict(showgrid=True, gridcolor='lightgray'),
+        yaxis=dict(showgrid=True, gridcolor='lightgray')
+    )
+    return fig_sentiment
+
+# Visualization 12: Treemap of Positive and Negative Feelings by Rating (Treemap)
+def plot_sentiment_rating_treemap(df):
+    # Take a sample of text reviews
+    sample_reviews = df.sample(n=10000, random_state=42)
+
+    # Compute sentiment polarity for each review in the sample
+    sample_reviews['sentiment'] = sample_reviews['review_text'].apply(lambda x: TextBlob(x).sentiment.polarity)
+
+    # Classify reviews as positive, negative, or neutral
+    def sentiment_label(score):
+        if score > 0.1:
+            return 'Positive'
+        elif score < -0.1:
+            return 'Negative'
+        else:
+            return 'Neutral'
+
+    sample_reviews['sentiment_label'] = sample_reviews['sentiment'].apply(sentiment_label)
+
+    # Aggregate counts by sentiment label and occasion
+    sentiment_treemap_data = (
+        sample_reviews
+        .groupby(['sentiment_label', 'rating'])
+        .size()
+        .reset_index(name='count')
+    )
+
+    # Plot treemap
+    fig_sentiment_treemap = px.treemap(
+        sentiment_treemap_data,
+        path=['sentiment_label', 'rating'],
+        values='count',
+        title='Treemap of Positive and Negative Feelings by Rating',
+        color='sentiment_label',
+        color_discrete_map={'Positive': 'green', 'Negative': 'red', 'Neutral': 'gray'},
+        template=plotly_template,
+        width=fig_width,
+        height=fig_height
+    )
+    fig_sentiment_treemap.update_layout(font=dict(family=font_family, size=16))
+
+    return fig_sentiment_treemap
 
 # Set page config
 st.set_page_config(page_title="Rent The Runway Dashboard", layout="wide")
@@ -111,6 +377,8 @@ def load_renttherunway():
     return pd.read_json(url, compression="gzip", lines=True)
 
 rent_the_runway_final_data = load_renttherunway()
+
+# Load the dataset from JSON file (JSON Lines format)
 #rent_the_runway_final_data = pd.read_json('renttherunway_final_data.json', lines=True)
 
 rent_the_runway_final_data.columns = (
@@ -214,4 +482,54 @@ if df is not None:
         fig = plot_average_rating_trend(df)
         st.plotly_chart(fig, use_container_width=True)
 
-    
+    # 4 Top Categories
+    elif page == "Top Categories":
+        st.title("Top 5 Most Popular Categories")
+        fig = plot_top_categories_bar(df)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # 5 Category-Occasion Treemap
+    elif page == "Category-Occasion Treemap":
+        st.title("Inventory Hierarchy: Categories within Occasions")
+        fig = plot_category_occasion_treemap(df)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # 6 Age by Body Type
+    elif page == "Age by Body Type":
+        st.title("Age Distribution by Body Type")
+        fig = plot_age_by_body_type_violin(df)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # 7 Height vs. Weight
+    elif page == "Height vs. Weight":
+        st.title("Height vs. Weight Correlation")
+        fig = plot_height_weight_scatter(df)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # 8 Body Type Distribution
+    elif page == "Body Type Distribution":
+        st.title("Distribution of User Body Types")
+        fig = plot_body_type_distribution_treemap(df)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # 9 Fit Feedback by Body Type
+    elif page == "Fit Feedback by Body Type":
+        st.title("Fit Feedback Breakdown by Body Type")
+        fig = plot_fit_feedback_by_body_type(df)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # 10 Size Range by Category
+    elif page == "Size Range by Category":
+        st.title("Size Range Distribution by Top 10 Categories")
+        fig = plot_size_range_by_category(df)
+        st.plotly_chart(fig, use_container_width=True)
+    # 11 Sentiment Analysis Histogram
+    elif page == "Sentiment Analysis":
+        st.title("Sentiment Analysis of Review Texts")
+        fig = plot_sentiment_analysis_histogram(df)
+        st.plotly_chart(fig, use_container_width=True)
+    # 12 Sentiment Rating Treemap
+    elif page == "Sentiment Rating Treemap":
+        st.title("Treemap of Positive and Negative Feelings by Rating")
+        fig = plot_sentiment_rating_treemap(df)
+        st.plotly_chart(fig, use_container_width=True)
