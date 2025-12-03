@@ -105,7 +105,13 @@ fig_width = 1000
 fig_height = 500
 
 # Load the dataset from JSON file (JSON Lines format)
-rent_the_runway_final_data = pd.read_json('renttherunway_final_data.json', lines=True)
+@st.cache_data
+def load_renttherunway():
+    url = "https://mcauleylab.ucsd.edu/public_datasets/data/renttherunway/renttherunway_final_data.json.gz"
+    return pd.read_json(url, compression="gzip", lines=True)
+
+rent_the_runway_final_data = load_renttherunway()
+#rent_the_runway_final_data = pd.read_json('renttherunway_final_data.json', lines=True)
 
 rent_the_runway_final_data.columns = (
     rent_the_runway_final_data.columns
